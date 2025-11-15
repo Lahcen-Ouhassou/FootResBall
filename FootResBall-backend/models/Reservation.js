@@ -4,13 +4,10 @@ const reservationSchema = new mongoose.Schema(
   {
     customerName: { type: String, required: true },
     phoneNumber: { type: String },
-    terrain: {
-      type: String,
-      enum: ["Terrain A", "Terrain B", "Terrain C"],
-      required: true,
-    },
+    idCard: { type: String }, // رقم بطاقة الهوية
+    terrain: { type: String, enum: ["A", "B", "C"], required: true },
     date: { type: Date, required: true },
-    timeSlot: { type: String, required: true }, // 08:00-09:00 ...
+    timeSlot: { type: String, required: true },
     duration: { type: Number, enum: [1, 2], required: true },
     price: { type: Number, required: true },
     paid: { type: Boolean, default: false },
