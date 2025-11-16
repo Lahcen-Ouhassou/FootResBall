@@ -8,6 +8,7 @@ const {
   updateReservation,
   deleteReservation,
   filterReservations,
+  getAvailableSlots,
 } = require("../controllers/reservations");
 
 const auth = require("../middleware/auth");
@@ -20,5 +21,6 @@ router.get("/filter", auth, filterReservations);
 router.get("/:id", auth, getReservationById);
 router.put("/:id", auth, updateReservation);
 router.delete("/:id", auth, deleteReservation);
+router.get("/available-slots", auth, getAvailableSlots);
 
 module.exports = router;
