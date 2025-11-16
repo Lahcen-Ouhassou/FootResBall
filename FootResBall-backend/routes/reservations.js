@@ -3,9 +3,22 @@ const router = express.Router();
 const {
   addReservation,
   getReservations,
+  getReservationById,
+  getReservationPDF,
+  updateReservation,
+  deleteReservation,
+  filterReservations,
 } = require("../controllers/reservations");
 
-router.post("/", addReservation); // لإضافة حجز
-router.get("/", getReservations); // لجلب كل الحجوزات
+const auth = require("../middleware/auth");
+
+// Routes
+router.get("/", auth, getReservations);
+router.post("/", auth, addReservation);
+router.get("/pdf/:id", auth, getReservationPDF);
+router.get("/filter", auth, filterReservations);
+router.get("/:id", auth, getReservationById);
+router.put("/:id", auth, updateReservation);
+router.delete("/:id", auth, deleteReservation);
 
 module.exports = router;
