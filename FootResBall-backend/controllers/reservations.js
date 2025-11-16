@@ -2,43 +2,36 @@ const Reservation = require("../models/Reservation");
 const { v4: uuidv4 } = require("uuid");
 const generateReservationPDF = require("../utils/pdfGenerator");
 
-// Time slots الثابتة
-const TIME_SLOTS = [
-  "08:00-09:00",
-  "09:15-10:15",
-  "10:30-11:30",
-  "11:45-12:45",
-  "14:00-15:00",
-  "15:15-16:15",
-  "16:30-17:30",
-  "17:45-18:45",
-];
+// Working hours
+const MIN_TIME = "08:00";
+const MAX_TIME = "22:00";
 
-// Function باش تشيك الوقت
-function canReserve(selectedSlot, date) {
-  const [startTime] = selectedSlot.split("-"); // "08:00"
-  const now = new Date();
-  const reservationDate = new Date(date + " " + startTime);
-
-  // ممنوع يحجز على وقت فات
-  if (reservationDate <= now) {
-    return { ok: false, message: "هذا الوقت داز، مايمكنش تدير reservation." };
-  }
-
-  // خاص يكون باقي على الأقل 2 ساعات قبل الوقت
-  const diffMs = reservationDate - now;
-  const diffHours = diffMs / (1000 * 60 * 60);
-  if (diffHours < 2) {
-    return {
-      ok: false,
-      message: "خاص تبقى على الأقل 2 ساعات قبل بداية المباراة.",
-    };
-  }
-
-  return { ok: true };
+// تحويل HH:MM إلى دقائق
+function toMinutes(time) {
+  const [h, m] = time.split(":").map(Number);
+  return h * 60 + m;
 }
 
-// إضافة حجز جديد
+// إضافة ساعات إلى تاريخ
+function addHours(date, hours) {
+  return new Date(date.getTime() + hours * 60 * 60 * 1000);
+}
+
+// حساب الثمن الأساسي
+function getBasePrice(duration) {
+  return duration === 1 ? 150 : 300;
+}
+
+// حساب الزيادة حسب التيران
+function getTerrainExtra(terrain) {
+  if (terrain === "B") return 10;
+  if (terrain === "C") return 20;
+  return 0; // Terrain A
+}
+
+// =======================
+// ADD RESERVATION
+// =======================
 exports.addReservation = async (req, res) => {
   try {
     const {
@@ -52,27 +45,60 @@ exports.addReservation = async (req, res) => {
       paid,
     } = req.body;
 
-    // Convert start time to Date object
+    // START TIME
     const start = new Date(`${date}T${timeSlotStart}:00`);
-    const end = new Date(start.getTime() + duration * 60 * 60 * 1000);
+    if (isNaN(start.getTime())) {
+      return res.status(400).json({ message: "Invalid start time format." });
+    }
 
-    // Check for conflicting reservations
+    // END TIME
+    const end = addHours(start, duration);
+
+    // Working hours check
+    const startMinutes = toMinutes(timeSlotStart);
+    const endMinutes = startMinutes + duration * 60;
+
+    if (startMinutes < toMinutes(MIN_TIME)) {
+      return res.status(400).json({ message: "Matches start at 08:00." });
+    }
+
+    if (endMinutes > toMinutes(MAX_TIME)) {
+      return res.status(400).json({ message: "Match must end before 22:00." });
+    }
+
+    // Cannot reserve past time
+    const now = new Date();
+    if (start <= now) {
+      return res
+        .status(400)
+        .json({ message: "Cannot reserve a past time slot." });
+    }
+
+    // Must reserve at least 2 hours before
+    const diffHours = (start - now) / (1000 * 60 * 60);
+    if (diffHours < 2) {
+      return res.status(400).json({
+        message: "Reservation must be made at least 2 hours before.",
+      });
+    }
+
+    // Check conflict
     const conflict = await Reservation.findOne({
       terrain,
       date,
-      $or: [{ timeSlotStart: { $lt: end }, timeSlotEnd: { $gt: start } }],
+      $or: [{ timeSlotStart: { $lt: end } }, { timeSlotEnd: { $gt: start } }],
     });
 
     if (conflict) {
-      return res
-        .status(400)
-        .json({ message: "This time slot is already booked" });
+      return res.status(400).json({ message: "This time is already booked." });
     }
 
-    // Calculate price
-    const price = duration === 1 ? 150 : 300;
+    // PRICE
+    const basePrice = getBasePrice(duration);
+    const extra = getTerrainExtra(terrain);
+    const price = basePrice + extra;
 
-    // Create reservation
+    // CREATE RESERVATION
     const reservation = new Reservation({
       customerName,
       phoneNumber,
@@ -88,18 +114,21 @@ exports.addReservation = async (req, res) => {
     });
 
     await reservation.save();
+
     res.status(201).json(reservation);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// جلب جميع الحجوزات
+// =======================
+// GET ALL RESERVATIONS
+// =======================
 exports.getReservations = async (req, res) => {
   try {
     const reservations = await Reservation.find().sort({
       date: 1,
-      timeSlot: 1,
+      timeSlotStart: 1,
     });
     res.json(reservations);
   } catch (err) {
@@ -107,7 +136,9 @@ exports.getReservations = async (req, res) => {
   }
 };
 
-// جلب حجز واحد حسب ID
+// =======================
+// GET ONE BY ID
+// =======================
 exports.getReservationById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -121,21 +152,26 @@ exports.getReservationById = async (req, res) => {
   }
 };
 
+// =======================
+// GET PDF
+// =======================
 exports.getReservationPDF = async (req, res) => {
   try {
     const { id } = req.params;
     const reservation = await Reservation.findById(id);
+
     if (!reservation)
       return res.status(404).json({ message: "Reservation not found" });
 
-    // استعمل utils/pdfGeneration
     generateReservationPDF(reservation, res);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// تعديل Reservation
+// =======================
+// UPDATE RESERVATION
+// =======================
 exports.updateReservation = async (req, res) => {
   try {
     const { id } = req.params;
@@ -153,7 +189,9 @@ exports.updateReservation = async (req, res) => {
   }
 };
 
-// حذف Reservation
+// =======================
+// DELETE
+// =======================
 exports.deleteReservation = async (req, res) => {
   try {
     const { id } = req.params;
@@ -168,19 +206,20 @@ exports.deleteReservation = async (req, res) => {
   }
 };
 
-// التصفية حسب التيران أو التاريخ
+// =======================
+// FILTER
+// =======================
 exports.filterReservations = async (req, res) => {
   try {
     const { terrain, date } = req.query;
 
     const query = {};
-
     if (terrain) query.terrain = terrain;
     if (date) query.date = date;
 
     const results = await Reservation.find(query).sort({
       date: 1,
-      timeSlot: 1,
+      timeSlotStart: 1,
     });
 
     res.json(results);
