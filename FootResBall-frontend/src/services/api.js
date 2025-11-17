@@ -1,18 +1,18 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api", // بدل بالـ URL ديال backend ديالك
+  baseURL: "http://localhost:5000/api",
 });
 
-// إضافة الـ token في كل request إذا موجود
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
+export default API;
+
+// Auth
 export const signup = (data) => API.post("/auth/signup", data);
 export const login = (data) => API.post("/auth/login", data);
 
