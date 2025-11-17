@@ -21,36 +21,26 @@ export default function Login({ setLoggedIn }) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="max-w-md mx-auto mt-10 p-5 border rounded"
-    >
-      <h2 className="text-xl font-bold mb-4">Login</h2>
-      {error && <p className="text-red-500">{error}</p>}
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        value={form.email}
-        onChange={handleChange}
-        className="block w-full mb-3 p-2 border rounded"
-        required
-      />
-      <input
-        type="password"
-        name="password"
-        placeholder="Password"
-        value={form.password}
-        onChange={handleChange}
-        className="block w-full mb-3 p-2 border rounded"
-        required
-      />
-      <button
-        type="submit"
-        className="bg-green-500 text-white px-4 py-2 rounded"
-      >
-        Login
-      </button>
-    </form>
+    <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-sm">
+        <h2 className="text-white text-xl font-bold mb-4">Login</h2>
+
+        <input
+          type="email"
+          placeholder="Email"
+          className="w-full p-2 mb-3 bg-gray-700 text-white rounded"
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          className="w-full p-2 mb-4 bg-gray-700 text-white rounded"
+        />
+
+        <button className="w-full bg-black text-white py-2 rounded">
+          Login
+        </button>
+      </div>
+    </div>
   );
 }
