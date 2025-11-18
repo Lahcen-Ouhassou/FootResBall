@@ -1,45 +1,36 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import Dashboard from "./components/Dashboard";
-import { useState } from "react";
+import ReservationForm from "./components/ReservationForm";
+import ProtectedRoute from "./components/ProtectedRoute";
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    !!localStorage.getItem("token")
-  );
-
+export default function App() {
   return (
-    <>
+    <BrowserRouter>
       <Routes>
-        {/* Default route */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+
         <Route
           path="/"
           element={
-            isAuthenticated ? (
-              <Navigate to="/dashboard" />
-            ) : (
-              <Navigate to="/login" />
-            )
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
           }
         />
 
         <Route
-          path="/login"
-          element={<Login setLoggedIn={setIsAuthenticated} />}
-        />
-        <Route
-          path="/signup"
-          element={<Signup setLoggedIn={setIsAuthenticated} />}
-        />
-
-        <Route
-          path="/dashboard"
-          element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
+          path="/reserve"
+          element={
+            <ProtectedRoute>
+              <ReservationForm />
+            </ProtectedRoute>
+          }
         />
       </Routes>
-    </>
+    </BrowserRouter>
   );
 }
-
-export default App;
