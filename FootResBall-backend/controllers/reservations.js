@@ -107,6 +107,7 @@ exports.addReservation = async (req, res) => {
       date,
       timeSlotStart: start,
       timeSlotEnd: end,
+      timeSlot: `${start}-${end}`,
       duration,
       price,
       paid,
@@ -121,7 +122,6 @@ exports.addReservation = async (req, res) => {
   }
 };
 
-// GET available time slots for a given date, terrain, and duration
 exports.getAvailableSlots = async (req, res) => {
   try {
     const { date, terrain, duration = 1 } = req.query;
@@ -132,9 +132,8 @@ exports.getAvailableSlots = async (req, res) => {
         .json({ message: "Please provide date and terrain." });
     }
 
-    const dur = parseInt(duration); // تحويل duration لرقم
+    const dur = parseInt(duration);
 
-    // All possible 1h slots (يمكن توسيع حسب الحاجة)
     const TIME_SLOTS = [
       "08:00",
       "09:00",
@@ -152,30 +151,37 @@ exports.getAvailableSlots = async (req, res) => {
       "21:00",
     ];
 
-    // جلب جميع الحجوزات فهاد اليوم وهاد التيران
     const reservations = await Reservation.find({ date, terrain });
+
+    const parsedReservations = reservations.map((r) => ({
+      start: new Date(r.timeSlotStart),
+      end: new Date(r.timeSlotEnd),
+    }));
 
     const availableSlots = [];
 
-    for (let i = 0; i <= TIME_SLOTS.length - dur; i++) {
-      // كل block من slots حسب duration
-      const block = TIME_SLOTS.slice(i, i + dur);
-      const blockStart = new Date(`${date}T${block[0]}:00`);
-      const blockEnd = new Date(`${date}T${block[block.length - 1]}:00`);
-      blockEnd.setHours(blockEnd.getHours() + 1); // duration تتحسب على آخر slot
+    for (let i = 0; i < TIME_SLOTS.length; i++) {
+      const blockStart = new Date(`${date}T${TIME_SLOTS[i]}:00`);
 
-      // Check conflict
-      const conflict = reservations.some((r) => {
-        const rStart = new Date(r.timeSlotStart);
-        const rEnd = new Date(r.timeSlotEnd);
-        return blockStart < rEnd && blockEnd > rStart;
+      // blockEnd = blockStart + duration(hours)
+      const blockEnd = new Date(blockStart.getTime() + dur * 60 * 60 * 1000);
+
+      // check conflict
+      const conflict = parsedReservations.some((r) => {
+        return blockStart < r.end && blockEnd > r.start;
       });
 
-      if (!conflict) availableSlots.push(block[0]); // Add starting time of block
+      if (!conflict) availableSlots.push(TIME_SLOTS[i]);
     }
 
-    res.json({ date, terrain, duration: dur, availableSlots });
+    res.json({
+      date,
+      terrain,
+      duration: dur,
+      availableSlots,
+    });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ message: err.message });
   }
 };
