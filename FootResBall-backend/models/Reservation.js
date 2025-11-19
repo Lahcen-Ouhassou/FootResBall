@@ -2,17 +2,20 @@ const mongoose = require("mongoose");
 
 const reservationSchema = new mongoose.Schema(
   {
-    customerName: { type: String, required: true },
-    phoneNumber: { type: String },
-    idCard: { type: String },
-    terrain: { type: String, required: true },
-    date: { type: Date, required: true }, // تاريخ المباراة
-    timeSlotStart: { type: Date, required: true }, // البداية
-    timeSlotEnd: { type: Date, required: true }, // النهاية
-    duration: { type: Number, required: true }, // 1 or 2 hours
-    price: { type: Number, required: true },
-    paid: { type: Boolean, default: false },
-    reservationCode: { type: String, required: true },
+    customerName: String,
+    phoneNumber: String,
+    idCard: String,
+    terrain: String,
+
+    date: { type: Date, required: true },
+
+    timeSlotStart: { type: String, required: true }, // ex: "08:00"
+    timeSlotEnd: { type: String, required: true }, // ex: "09:00"
+
+    duration: Number,
+    price: Number,
+    paid: Boolean,
+    reservationCode: String,
   },
   { timestamps: true }
 );
