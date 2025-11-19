@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import API from "../services/api";
 
 export default function ReservationForm({ refresh }) {
@@ -13,17 +13,63 @@ export default function ReservationForm({ refresh }) {
     paid: false,
   });
 
+  const [availableSlots, setAvailableSlots] = useState([]);
+
+  // Handle change
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm({ ...form, [name]: type === "checkbox" ? checked : value });
   };
 
+  // Fetch available slots when date, terrain or duration changes
+  useEffect(() => {
+    if (!form.date || !form.terrain) return;
+
+    API.get("/reservations/available-slots", {
+      params: {
+        date: form.date,
+        terrain: form.terrain,
+        duration: form.duration,
+      },
+    })
+      .then((res) => {
+        setAvailableSlots(res.data.availableSlots || []);
+      })
+      .catch(() => setAvailableSlots([]));
+  }, [form.date, form.terrain, form.duration]);
+
+  // Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Convert to full ISO datetime
+    const timeStart = `${form.date}T${form.timeSlotStart}:00`;
+    const timeEndHour =
+      parseInt(form.timeSlotStart.split(":")[0]) + parseInt(form.duration);
+    const timeEnd = `${form.date}T${String(timeEndHour).padStart(
+      2,
+      "0"
+    )}:00:00`;
+
     try {
-      await API.post("/reservations", form);
+      await API.post("/reservations", {
+        ...form,
+        timeSlotStart: timeStart,
+        timeSlotEnd: timeEnd,
+      });
+
       refresh();
-      setForm({ ...form, customerName: "", phoneNumber: "", idCard: "" });
+
+      setForm({
+        customerName: "",
+        phoneNumber: "",
+        idCard: "",
+        terrain: "A",
+        date: "",
+        timeSlotStart: "",
+        duration: 1,
+        paid: false,
+      });
     } catch (err) {
       alert(err.response?.data?.message || "Error creating reservation");
     }
@@ -35,6 +81,7 @@ export default function ReservationForm({ refresh }) {
       className="bg-gray-50 p-4 rounded shadow-md w-full max-w-md"
     >
       <h2 className="font-bold mb-2">Add Reservation</h2>
+
       <input
         name="customerName"
         value={form.customerName}
@@ -42,6 +89,7 @@ export default function ReservationForm({ refresh }) {
         placeholder="Customer Name"
         className="w-full p-2 mb-2 border rounded"
       />
+
       <input
         name="phoneNumber"
         value={form.phoneNumber}
@@ -49,6 +97,7 @@ export default function ReservationForm({ refresh }) {
         placeholder="Phone Number"
         className="w-full p-2 mb-2 border rounded"
       />
+
       <input
         name="idCard"
         value={form.idCard}
@@ -56,6 +105,7 @@ export default function ReservationForm({ refresh }) {
         placeholder="ID Card"
         className="w-full p-2 mb-2 border rounded"
       />
+
       <select
         name="terrain"
         value={form.terrain}
@@ -66,6 +116,7 @@ export default function ReservationForm({ refresh }) {
         <option value="B">Terrain B</option>
         <option value="C">Terrain C</option>
       </select>
+
       <input
         type="date"
         name="date"
@@ -73,13 +124,7 @@ export default function ReservationForm({ refresh }) {
         onChange={handleChange}
         className="w-full p-2 mb-2 border rounded"
       />
-      <input
-        type="time"
-        name="timeSlotStart"
-        value={form.timeSlotStart}
-        onChange={handleChange}
-        className="w-full p-2 mb-2 border rounded"
-      />
+
       <select
         name="duration"
         value={form.duration}
@@ -89,6 +134,27 @@ export default function ReservationForm({ refresh }) {
         <option value={1}>1 hour</option>
         <option value={2}>2 hours</option>
       </select>
+
+      {/* Available Slots */}
+      <select
+        name="timeSlotStart"
+        value={form.timeSlotStart}
+        onChange={handleChange}
+        className="w-full p-2 mb-2 border rounded"
+      >
+        <option value="">Select time</option>
+
+        {availableSlots.length === 0 && (
+          <option disabled>No available slots</option>
+        )}
+
+        {availableSlots.map((time) => (
+          <option key={time} value={time}>
+            {time}
+          </option>
+        ))}
+      </select>
+
       <label className="flex items-center mb-2">
         <input
           type="checkbox"
@@ -99,6 +165,7 @@ export default function ReservationForm({ refresh }) {
         />
         Paid
       </label>
+
       <button
         type="submit"
         className="bg-green-500 text-white py-2 px-4 rounded"
