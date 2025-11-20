@@ -50,7 +50,15 @@ export default function Login() {
           className="w-full p-2 mb-3 rounded bg-gray-700 text-white"
           placeholder="Password"
         />
-
+        <p className="text-white text-sm mb-4">
+          Don't have an account?{" "}
+          <span
+            className="text-blue-400 cursor-pointer"
+            onClick={() => navigate("/signup")}
+          >
+            Sign Up
+          </span>
+        </p>
         <button
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded"
