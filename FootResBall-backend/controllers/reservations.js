@@ -2,31 +2,34 @@ const Reservation = require("../models/Reservation");
 const { v4: uuidv4 } = require("uuid");
 const generateReservationPDF = require("../utils/pdfGenerator");
 
-// Working hours
+// =======================
+// SETTINGS
+// =======================
+
 const MIN_TIME = "08:00";
 const MAX_TIME = "22:00";
 
-// تحويل HH:MM إلى دقائق
+// HH:MM → minutes
 function toMinutes(time) {
   const [h, m] = time.split(":").map(Number);
   return h * 60 + m;
 }
 
-// إضافة ساعات إلى تاريخ
+// Add hours to a date
 function addHours(date, hours) {
   return new Date(date.getTime() + hours * 60 * 60 * 1000);
 }
 
-// حساب الثمن الأساسي
+// Base price
 function getBasePrice(duration) {
-  return duration === 1 ? 150 : 300;
+  return duration * 150; // 150 dh per hour
 }
 
-// حساب الزيادة حسب التيران
+// Extra price per terrain
 function getTerrainExtra(terrain) {
   if (terrain === "B") return 10;
   if (terrain === "C") return 20;
-  return 0; // Terrain A
+  return 0; // terrain A
 }
 
 // =======================
@@ -45,16 +48,16 @@ exports.addReservation = async (req, res) => {
       paid,
     } = req.body;
 
-    // START TIME
+    // Convert start to Date
     const start = new Date(`${date}T${timeSlotStart}:00`);
     if (isNaN(start.getTime())) {
-      return res.status(400).json({ message: "Invalid start time format." });
+      return res.status(400).json({ message: "Invalid start time." });
     }
 
-    // END TIME
+    // Calculate end
     const end = addHours(start, duration);
 
-    // Working hours check
+    // Working hours
     const startMinutes = toMinutes(timeSlotStart);
     const endMinutes = startMinutes + duration * 60;
 
@@ -66,39 +69,29 @@ exports.addReservation = async (req, res) => {
       return res.status(400).json({ message: "Match must end before 22:00." });
     }
 
-    // Cannot reserve past time
+    // Check past
     const now = new Date();
     if (start <= now) {
-      return res
-        .status(400)
-        .json({ message: "Cannot reserve a past time slot." });
-    }
-
-    // Must reserve at least 2 hours before
-    const diffHours = (start - now) / (1000 * 60 * 60);
-    if (diffHours < 2) {
-      return res.status(400).json({
-        message: "Reservation must be made at least 2 hours before.",
-      });
+      return res.status(400).json({ message: "Cannot reserve past time." });
     }
 
     // Check conflict
     const conflict = await Reservation.findOne({
       terrain,
-      date,
+      date: new Date(date),
       $or: [{ timeSlotStart: { $lt: end } }, { timeSlotEnd: { $gt: start } }],
     });
 
     if (conflict) {
-      return res.status(400).json({ message: "This time is already booked." });
+      return res.status(400).json({
+        message: "This time is already booked.",
+      });
     }
 
-    // PRICE
-    const basePrice = getBasePrice(duration);
-    const extra = getTerrainExtra(terrain);
-    const price = basePrice + extra;
+    // PRICE CORRECT SYSTEM
+    const price = getBasePrice(duration) + getTerrainExtra(terrain) * duration;
 
-    // CREATE RESERVATION
+    // Create reservation
     const reservation = new Reservation({
       customerName,
       phoneNumber,
@@ -107,7 +100,10 @@ exports.addReservation = async (req, res) => {
       date,
       timeSlotStart: start,
       timeSlotEnd: end,
-      timeSlot: `${start}-${end}`,
+      timeSlot: `${timeSlotStart}-${String(end.getHours()).padStart(
+        2,
+        "0"
+      )}:${String(end.getMinutes()).padStart(2, "0")}`,
       duration,
       price,
       paid,
@@ -122,6 +118,9 @@ exports.addReservation = async (req, res) => {
   }
 };
 
+// =======================
+// Get Available Slots
+// =======================
 exports.getAvailableSlots = async (req, res) => {
   try {
     const { date, terrain, duration = 1 } = req.query;
@@ -241,14 +240,71 @@ exports.updateReservation = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const updated = await Reservation.findByIdAndUpdate(id, req.body, {
-      new: true,
+    const {
+      customerName,
+      phoneNumber,
+      idCard,
+      terrain,
+      date,
+      timeSlotStart,
+      duration,
+      paid,
+    } = req.body;
+
+    const reservation = await Reservation.findById(id);
+    if (!reservation) {
+      return res.status(404).json({ message: "Reservation not found" });
+    }
+
+    // ============================
+    // 1️⃣ Convert start → Date()
+    // ============================
+    const start = new Date(`${date}T${timeSlotStart}:00`);
+    if (isNaN(start.getTime())) {
+      return res.status(400).json({ message: "Invalid start time." });
+    }
+
+    // END TIME
+    const end = new Date(start.getTime() + duration * 60 * 60 * 1000);
+
+    // ============================
+    // 2️⃣ RE-CHECK conflict
+    // ============================
+    const conflict = await Reservation.findOne({
+      _id: { $ne: id },
+      terrain,
+      date,
+      $or: [{ timeSlotStart: { $lt: end } }, { timeSlotEnd: { $gt: start } }],
     });
 
-    if (!updated)
-      return res.status(404).json({ message: "Reservation not found" });
+    if (conflict) {
+      return res.status(400).json({ message: "This time is already booked." });
+    }
 
-    res.json(updated);
+    // ============================
+    // 3️⃣ RE-CALCULATE PRICE
+    // ============================
+    const basePrice = getBasePrice(duration);
+    const extra = getTerrainExtra(terrain);
+    const finalPrice = basePrice + extra;
+
+    // ============================
+    // 4️⃣ UPDATE FIELDS
+    // ============================
+    reservation.customerName = customerName;
+    reservation.phoneNumber = phoneNumber;
+    reservation.idCard = idCard;
+    reservation.terrain = terrain;
+    reservation.date = date;
+    reservation.timeSlotStart = start;
+    reservation.timeSlotEnd = end;
+    reservation.duration = duration;
+    reservation.price = finalPrice;
+    reservation.paid = paid;
+
+    await reservation.save();
+
+    res.json(reservation);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
