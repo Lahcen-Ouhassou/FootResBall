@@ -1,67 +1,62 @@
-import { useEffect, useState } from "react";
-import API from "../services/api";
-import ReservationForm from "./ReservationForm";
+import React, { useEffect, useState } from "react";
+import { getReservations } from "../services/api";
 
 export default function Dashboard() {
-  const [reservations, setReservations] = useState([]);
+  const [counts, setCounts] = useState({
+    total: 0,
+    today: 0,
+    paid: 0,
+    unpaid: 0,
+  });
   const [loading, setLoading] = useState(true);
 
-  const fetchReservations = async () => {
-    try {
-      const { data } = await API.get("/reservations");
-      setReservations(data);
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    window.location.href = "/login";
-  };
-
   useEffect(() => {
-    fetchReservations();
+    async function load() {
+      try {
+        const { data } = await getReservations();
+        const total = data.length;
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const today = data.filter(
+          (r) => r.date?.slice(0, 10) === todayStr
+        ).length;
+        const paid = data.filter((r) => r.paid).length;
+        const unpaid = total - paid;
+        setCounts({ total, today, paid, unpaid });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
   }, []);
 
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
+  if (loading) return <div className="p-6">Loading...</div>;
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Reservations Dashboard</h1>
-        <button
-          onClick={logout}
-          className="bg-red-500 text-white px-4 py-2 rounded"
-        >
-          Logout
-        </button>
-      </div>
-
-      <ReservationForm refresh={fetchReservations} />
-
-      <div className="mt-6">
-        {reservations.map((r) => (
-          <div key={r._id} className="border p-4 mb-2 rounded shadow">
-            <p>
-              <strong>{r.customerName}</strong> — Terrain {r.terrain} —{" "}
-              {new Date(r.timeSlotStart).toLocaleString()}
-            </p>
-            <p>
-              Duration: {r.duration}h | Price: {r.price} DH
-            </p>
-
-            <a
-              href={`http://localhost:5000/api/reservations/pdf/${r._id}`}
-              target="_blank"
-              className="text-blue-500 underline"
-            >
-              Download PDF
-            </a>
-          </div>
-        ))}
+      <h2 className="text-2xl font-bold mb-4">Dashboard</h2>
+      <div className="grid grid-cols-4 gap-4">
+        <div className="p-4 bg-white rounded shadow">
+          Total Reservations
+          <br />
+          <strong>{counts.total}</strong>
+        </div>
+        <div className="p-4 bg-white rounded shadow">
+          Today
+          <br />
+          <strong>{counts.today}</strong>
+        </div>
+        <div className="p-4 bg-white rounded shadow">
+          Paid
+          <br />
+          <strong>{counts.paid}</strong>
+        </div>
+        <div className="p-4 bg-white rounded shadow">
+          Unpaid
+          <br />
+          <strong>{counts.unpaid}</strong>
+        </div>
       </div>
     </div>
   );
