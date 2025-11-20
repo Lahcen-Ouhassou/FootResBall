@@ -1,7 +1,12 @@
-import { useState, useEffect } from "react";
-import API from "../services/api";
+import React, { useEffect, useState } from "react";
+import {
+  addReservation,
+  getAvailableSlots,
+  updateReservation,
+  getReservation,
+} from "../services/api";
 
-export default function ReservationForm({ refresh }) {
+export default function ReservationForm({ refresh, editId, onDone }) {
   const [form, setForm] = useState({
     customerName: "",
     phoneNumber: "",
@@ -12,76 +17,109 @@ export default function ReservationForm({ refresh }) {
     duration: 1,
     paid: false,
   });
+  const [slots, setSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [error, setError] = useState("");
 
-  const [availableSlots, setAvailableSlots] = useState([]);
-
-  // Handle change
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm({ ...form, [name]: type === "checkbox" ? checked : value });
-  };
-
-  // Fetch available slots when date, terrain or duration changes
   useEffect(() => {
-    if (!form.date || !form.terrain) return;
+    if (editId) {
+      // load reservation to edit
+      (async () => {
+        try {
+          const { data } = await getReservation(editId);
+          // normalize date to yyyy-mm-dd for input
+          const isoDate = new Date(data.date).toISOString().slice(0, 10);
+          setForm({
+            ...form,
+            customerName: data.customerName || "",
+            phoneNumber: data.phoneNumber || "",
+            idCard: data.idCard || "",
+            terrain: data.terrain || "A",
+            date: isoDate,
+            timeSlotStart: data.timeSlotStart
+              ? new Date(data.timeSlotStart).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "",
+            duration: data.duration || 1,
+            paid: !!data.paid,
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      })();
+    }
+    // eslint-disable-next-line
+  }, [editId]);
 
-    API.get("/reservations/available-slots", {
-      params: {
-        date: form.date,
-        terrain: form.terrain,
-        duration: form.duration,
-      },
-    })
-      .then((res) => {
-        setAvailableSlots(res.data.availableSlots || []);
-      })
-      .catch(() => setAvailableSlots([]));
+  useEffect(() => {
+    // fetch available slots when date/terrain/duration change
+    async function loadSlots() {
+      if (!form.date || !form.terrain) return setSlots([]);
+      setLoadingSlots(true);
+      try {
+        const { data } = await getAvailableSlots({
+          date: form.date,
+          terrain: form.terrain,
+          duration: form.duration,
+        });
+        setSlots(data.availableSlots || []);
+      } catch (err) {
+        console.error(err);
+        setSlots([]);
+      } finally {
+        setLoadingSlots(false);
+      }
+    }
+    loadSlots();
   }, [form.date, form.terrain, form.duration]);
 
-  // Submit
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Convert to full ISO datetime
-    const timeStart = `${form.date}T${form.timeSlotStart}:00`;
-    const timeEndHour =
-      parseInt(form.timeSlotStart.split(":")[0]) + parseInt(form.duration);
-    const timeEnd = `${form.date}T${String(timeEndHour).padStart(
-      2,
-      "0"
-    )}:00:00`;
-
     try {
-      await API.post("/reservations", {
-        ...form,
-        timeSlotStart: timeStart,
-        timeSlotEnd: timeEnd,
-      });
-
-      refresh();
-
-      setForm({
-        customerName: "",
-        phoneNumber: "",
-        idCard: "",
-        terrain: "A",
-        date: "",
-        timeSlotStart: "",
-        duration: 1,
-        paid: false,
-      });
+      if (!form.timeSlotStart) throw new Error("Please select a time slot");
+      if (editId) {
+        await updateReservation(editId, form);
+      } else {
+        await addReservation(form);
+      }
+      refresh?.();
+      onDone?.();
+      // reset
+      if (!editId)
+        setForm({
+          customerName: "",
+          phoneNumber: "",
+          idCard: "",
+          terrain: "A",
+          date: "",
+          timeSlotStart: "",
+          duration: 1,
+          paid: false,
+        });
     } catch (err) {
-      alert(err.response?.data?.message || "Error creating reservation");
+      setError(err.response?.data?.message || err.message || "Error");
     }
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-gray-50 p-4 rounded shadow-md w-full max-w-md"
+      className="bg-white p-4 rounded shadow max-w-md"
     >
-      <h2 className="font-bold mb-2">Add Reservation</h2>
-
+      <h3 className="font-bold mb-2">
+        {editId ? "Edit Reservation" : "Add Reservation"}
+      </h3>
+      {error && <div className="text-red-500 mb-2">{error}</div>}
       <input
         name="customerName"
         value={form.customerName}
@@ -89,7 +127,6 @@ export default function ReservationForm({ refresh }) {
         placeholder="Customer Name"
         className="w-full p-2 mb-2 border rounded"
       />
-
       <input
         name="phoneNumber"
         value={form.phoneNumber}
@@ -97,7 +134,6 @@ export default function ReservationForm({ refresh }) {
         placeholder="Phone Number"
         className="w-full p-2 mb-2 border rounded"
       />
-
       <input
         name="idCard"
         value={form.idCard}
@@ -105,7 +141,6 @@ export default function ReservationForm({ refresh }) {
         placeholder="ID Card"
         className="w-full p-2 mb-2 border rounded"
       />
-
       <select
         name="terrain"
         value={form.terrain}
@@ -116,7 +151,6 @@ export default function ReservationForm({ refresh }) {
         <option value="B">Terrain B</option>
         <option value="C">Terrain C</option>
       </select>
-
       <input
         type="date"
         name="date"
@@ -124,7 +158,6 @@ export default function ReservationForm({ refresh }) {
         onChange={handleChange}
         className="w-full p-2 mb-2 border rounded"
       />
-
       <select
         name="duration"
         value={form.duration}
@@ -135,27 +168,26 @@ export default function ReservationForm({ refresh }) {
         <option value={2}>2 hours</option>
       </select>
 
-      {/* Available Slots */}
-      <select
-        name="timeSlotStart"
-        value={form.timeSlotStart}
-        onChange={handleChange}
-        className="w-full p-2 mb-2 border rounded"
-      >
-        <option value="">Select time</option>
+      <label className="block mb-2">Select time</label>
+      {loadingSlots ? (
+        <div>Loading slots...</div>
+      ) : (
+        <select
+          name="timeSlotStart"
+          value={form.timeSlotStart}
+          onChange={handleChange}
+          className="w-full p-2 mb-2 border rounded"
+        >
+          <option value="">Select time</option>
+          {slots.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      )}
 
-        {availableSlots.length === 0 && (
-          <option disabled>No available slots</option>
-        )}
-
-        {availableSlots.map((time) => (
-          <option key={time} value={time}>
-            {time}
-          </option>
-        ))}
-      </select>
-
-      <label className="flex items-center mb-2">
+      <label className="flex items-center mb-3">
         <input
           type="checkbox"
           name="paid"
@@ -168,9 +200,9 @@ export default function ReservationForm({ refresh }) {
 
       <button
         type="submit"
-        className="bg-green-500 text-white py-2 px-4 rounded"
+        className="bg-green-600 text-white px-4 py-2 rounded"
       >
-        Add Reservation
+        {editId ? "Update" : "Add Reservation"}
       </button>
     </form>
   );
