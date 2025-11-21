@@ -15,10 +15,11 @@ export default function Dashboard() {
       try {
         const { data } = await getReservations();
         const total = data.length;
-        const todayStr = new Date().toISOString().slice(0, 10);
-        const today = data.filter(
-          (r) => r.date?.slice(0, 10) === todayStr
-        ).length;
+        const todayStr = new Date().toLocaleDateString("en-CA");
+        const today = data.filter((r) => {
+          const rDate = new Date(r.createdAt).toLocaleDateString("en-CA");
+          return rDate === todayStr;
+        }).length;
         const paid = data.filter((r) => r.paid).length;
         const unpaid = total - paid;
         setCounts({ total, today, paid, unpaid });
