@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { getReservations, deleteReservation } from "../services/api";
+import {
+  getReservations,
+  deleteReservation,
+  getReservationPDF,
+} from "../services/api";
 import ReservationForm from "./ReservationForm";
 
 export default function ReservationsPage() {
@@ -78,12 +82,7 @@ export default function ReservationsPage() {
                       Delete
                     </button>
 
-                    <button
-                      onClick={() => handleDownload(r._id)}
-                      className="px-2 py-1 bg-blue-500 text-white rounded"
-                    >
-                      PDF
-                    </button>
+                    <button onClick={() => handleDownload(r._id)}>PDF</button>
                   </div>
                 </div>
               </div>
