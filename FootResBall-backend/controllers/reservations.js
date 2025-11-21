@@ -57,29 +57,12 @@ exports.addReservation = async (req, res) => {
     // Calculate end
     const end = addHours(start, duration);
 
-    // Working hours
-    const startMinutes = toMinutes(timeSlotStart);
-    const endMinutes = startMinutes + duration * 60;
-
-    if (startMinutes < toMinutes(MIN_TIME)) {
-      return res.status(400).json({ message: "Matches start at 08:00." });
-    }
-
-    if (endMinutes > toMinutes(MAX_TIME)) {
-      return res.status(400).json({ message: "Match must end before 22:00." });
-    }
-
-    // Check past
-    const now = new Date();
-    if (start <= now) {
-      return res.status(400).json({ message: "Cannot reserve past time." });
-    }
-
-    // Check conflict
+    // Check conflict (FIXED ✔)
     const conflict = await Reservation.findOne({
       terrain,
       date: new Date(date),
-      $or: [{ timeSlotStart: { $lt: end } }, { timeSlotEnd: { $gt: start } }],
+      timeSlotStart: { $lt: end },
+      timeSlotEnd: { $gt: start },
     });
 
     if (conflict) {
@@ -88,7 +71,14 @@ exports.addReservation = async (req, res) => {
       });
     }
 
-    // PRICE CORRECT SYSTEM
+    const startHour = String(start.getHours()).padStart(2, "0");
+    const startMin = String(start.getMinutes()).padStart(2, "0");
+
+    const endHour = String(end.getHours()).padStart(2, "0");
+    const endMin = String(end.getMinutes()).padStart(2, "0");
+
+    const timeSlotString = `${startHour}:${startMin}-${endHour}:${endMin}`;
+    // PRICE SYSTEM
     const price = getBasePrice(duration) + getTerrainExtra(terrain) * duration;
 
     // Create reservation
@@ -97,13 +87,10 @@ exports.addReservation = async (req, res) => {
       phoneNumber,
       idCard,
       terrain,
-      date,
+      date: new Date(date),
       timeSlotStart: start,
       timeSlotEnd: end,
-      timeSlot: `${timeSlotStart}-${String(end.getHours()).padStart(
-        2,
-        "0"
-      )}:${String(end.getMinutes()).padStart(2, "0")}`,
+      timeSlot: timeSlotString,
       duration,
       price,
       paid,
