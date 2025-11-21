@@ -69,8 +69,10 @@ export default function ReservationsPage() {
 
                   <div className="flex gap-2">
                     <button
-                      onClick={() => setEditingId(r._id)}
-                      className="px-2 py-1 bg-yellow-400 rounded"
+                      className="px-3 py-1 bg-yellow-500 text-white rounded"
+                      onClick={() =>
+                        navigate(`/reservations/edit/${reservation._id}`)
+                      }
                     >
                       Edit
                     </button>
