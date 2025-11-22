@@ -5,11 +5,12 @@ import {
   getReservationPDF,
 } from "../services/api";
 import ReservationForm from "./ReservationForm";
+import { useNavigate } from "react-router-dom";
 
 export default function ReservationsPage() {
+  const navigate = useNavigate();
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -31,6 +32,7 @@ export default function ReservationsPage() {
     await deleteReservation(id);
     load();
   };
+
   const handleDownload = async (id) => {
     try {
       const res = await getReservationPDF(id);
@@ -50,58 +52,47 @@ export default function ReservationsPage() {
     <div className="p-6">
       <h2 className="text-xl font-bold mb-4">All Reservations</h2>
 
-      <div className="grid grid-cols-2 gap-6">
-        <div>
-          <h3 className="font-semibold mb-2">List</h3>
-          {loading ? (
-            <div>Loading...</div>
-          ) : (
-            reservations.map((r) => (
-              <div key={r._id} className="border p-3 mb-3 rounded bg-white">
-                <div className="flex justify-between">
+      <div className="grid grid-cols-1 gap-6">
+        {loading ? (
+          <div>Loading...</div>
+        ) : (
+          reservations.map((r) => (
+            <div key={r._id} className="border p-3 mb-3 rounded bg-white">
+              <div className="flex justify-between">
+                <div>
+                  <strong>{r.customerName}</strong> — Terrain {r.terrain}
+                  <div>{new Date(r.timeSlotStart).toLocaleString()}</div>
                   <div>
-                    <strong>{r.customerName}</strong> — Terrain {r.terrain} —{" "}
-                    {new Date(r.timeSlotStart).toLocaleString()}
-                    <div>
-                      Duration: {r.duration}h | Price: {r.price} DH
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      className="px-3 py-1 bg-yellow-500 text-white rounded"
-                      onClick={() =>
-                        navigate(`/reservations/edit/${reservation._id}`)
-                      }
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(r._id)}
-                      className="px-2 py-1 bg-red-500 text-white rounded"
-                    >
-                      Delete
-                    </button>
-
-                    <button onClick={() => handleDownload(r._id)}>PDF</button>
+                    Duration: {r.duration}h | Price: {r.price} DH
                   </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
 
-        <div>
-          <h3 className="font-semibold mb-2">
-            {editingId ? "Edit reservation" : "Add new"}
-          </h3>
-          <ReservationForm
-            refresh={load}
-            editId={editingId}
-            onDone={() => setEditingId(null)}
-          />
-        </div>
+                <div className="flex gap-2 items-start">
+                  <button
+                    onClick={() => navigate(`/reserve-edit/${r._id}`)}
+                    className="bg-yellow-500 px-3 py-1 text-white rounded"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(r._id)}
+                    className="px-2 py-1 bg-red-500 text-white rounded"
+                  >
+                    Delete
+                  </button>
+
+                  <button
+                    className="px-2 py-1 bg-blue-500 text-white rounded"
+                    onClick={() => handleDownload(r._id)}
+                  >
+                    PDF
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
