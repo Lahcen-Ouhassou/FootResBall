@@ -6,6 +6,7 @@ import ReservationsPage from "./components/ReservationsPage";
 import ReservationForm from "./components/ReservationForm";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
+import EditReservationPage from "./components/EditReservationPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function AppLayout({ children }) {
@@ -42,22 +43,35 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/reservations"
           element={
-            <ProtectedRoute>
-              <AppLayout>
-                <ReservationsPage />
-              </AppLayout>
-            </ProtectedRoute>
+            <AppLayout>
+              <ReservationsPage />
+            </AppLayout>
           }
         />
+
+        {/* ADD NEW */}
         <Route
           path="/reserve"
           element={
             <ProtectedRoute>
               <AppLayout>
-                <ReservationForm refresh={() => window.location.reload()} />
+                <ReservationForm />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* EDIT */}
+        <Route
+          path="/reserve-edit/:id"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <EditReservationPage />
               </AppLayout>
             </ProtectedRoute>
           }
