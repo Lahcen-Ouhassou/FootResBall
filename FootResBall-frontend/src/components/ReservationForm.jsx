@@ -5,8 +5,10 @@ import {
   updateReservation,
   getReservation,
 } from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 export default function ReservationForm({ refresh, editId, onDone }) {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     customerName: "",
     phoneNumber: "",
@@ -17,20 +19,20 @@ export default function ReservationForm({ refresh, editId, onDone }) {
     duration: 1,
     paid: false,
   });
+
   const [slots, setSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     if (editId) {
-      // load reservation to edit
       (async () => {
         try {
           const { data } = await getReservation(editId);
-          // normalize date to yyyy-mm-dd for input
           const isoDate = new Date(data.date).toISOString().slice(0, 10);
+
           setForm({
-            ...form,
             customerName: data.customerName || "",
             phoneNumber: data.phoneNumber || "",
             idCard: data.idCard || "",
@@ -50,13 +52,12 @@ export default function ReservationForm({ refresh, editId, onDone }) {
         }
       })();
     }
-    // eslint-disable-next-line
   }, [editId]);
 
   useEffect(() => {
-    // fetch available slots when date/terrain/duration change
     async function loadSlots() {
       if (!form.date || !form.terrain) return setSlots([]);
+
       setLoadingSlots(true);
       try {
         const { data } = await getAvailableSlots({
@@ -64,10 +65,10 @@ export default function ReservationForm({ refresh, editId, onDone }) {
           terrain: form.terrain,
           duration: form.duration,
         });
+
         setSlots(data.availableSlots || []);
       } catch (err) {
         console.error(err);
-        setSlots([]);
       } finally {
         setLoadingSlots(false);
       }
@@ -87,15 +88,16 @@ export default function ReservationForm({ refresh, editId, onDone }) {
     e.preventDefault();
     try {
       if (!form.timeSlotStart) throw new Error("Please select a time slot");
+
       if (editId) {
         await updateReservation(editId, form);
+        setSuccess("Reservation updated successfully!");
+        setTimeout(() => {
+          navigate("/reservations"); // ⬅️ يرجع لصفحة All Reservations
+        }, 1200);
       } else {
         await addReservation(form);
-      }
-      refresh?.();
-      onDone?.();
-      // reset
-      if (!editId)
+        setSuccess("Reservation added successfully!");
         setForm({
           customerName: "",
           phoneNumber: "",
@@ -106,6 +108,10 @@ export default function ReservationForm({ refresh, editId, onDone }) {
           duration: 1,
           paid: false,
         });
+      }
+
+      refresh?.();
+      onDone?.();
     } catch (err) {
       setError(err.response?.data?.message || err.message || "Error");
     }
@@ -119,7 +125,10 @@ export default function ReservationForm({ refresh, editId, onDone }) {
       <h3 className="font-bold mb-2">
         {editId ? "Edit Reservation" : "Add Reservation"}
       </h3>
+
       {error && <div className="text-red-500 mb-2">{error}</div>}
+      {success && <div className="text-green-600 mb-2">{success}</div>}
+
       <input
         name="customerName"
         value={form.customerName}
@@ -127,6 +136,7 @@ export default function ReservationForm({ refresh, editId, onDone }) {
         placeholder="Customer Name"
         className="w-full p-2 mb-2 border rounded"
       />
+
       <input
         name="phoneNumber"
         value={form.phoneNumber}
@@ -134,6 +144,7 @@ export default function ReservationForm({ refresh, editId, onDone }) {
         placeholder="Phone Number"
         className="w-full p-2 mb-2 border rounded"
       />
+
       <input
         name="idCard"
         value={form.idCard}
@@ -141,6 +152,7 @@ export default function ReservationForm({ refresh, editId, onDone }) {
         placeholder="ID Card"
         className="w-full p-2 mb-2 border rounded"
       />
+
       <select
         name="terrain"
         value={form.terrain}
@@ -151,6 +163,7 @@ export default function ReservationForm({ refresh, editId, onDone }) {
         <option value="B">Terrain B</option>
         <option value="C">Terrain C</option>
       </select>
+
       <input
         type="date"
         name="date"
@@ -158,6 +171,7 @@ export default function ReservationForm({ refresh, editId, onDone }) {
         onChange={handleChange}
         className="w-full p-2 mb-2 border rounded"
       />
+
       <select
         name="duration"
         value={form.duration}
@@ -169,6 +183,7 @@ export default function ReservationForm({ refresh, editId, onDone }) {
       </select>
 
       <label className="block mb-2">Select time</label>
+
       {loadingSlots ? (
         <div>Loading slots...</div>
       ) : (
