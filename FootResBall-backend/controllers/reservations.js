@@ -7,15 +7,17 @@ const generateReservationPDF = require("../utils/pdfGenerator");
 // =======================
 
 const MIN_TIME = "08:00";
-const MAX_TIME = "22:00";
+const MAX_TIME = "23:00";
 
-// HH:MM → minutes
+// HH:MM → minutes  ,
+//           "08:30" إلى 510 minutes
 function toMinutes(time) {
   const [h, m] = time.split(":").map(Number);
   return h * 60 + m;
 }
 
 // Add hours to a date
+// addHours(new Date("2025-11-20T18:00"), 2) =>  20:00
 function addHours(date, hours) {
   return new Date(date.getTime() + hours * 60 * 60 * 1000);
 }
@@ -51,7 +53,7 @@ exports.addReservation = async (req, res) => {
     // Convert start to Date
     const start = new Date(`${date}T${timeSlotStart}:00`);
     if (isNaN(start.getTime())) {
-      return res.status(400).json({ message: "Invalid start time." });
+      return res.status(400).json({ message: "Invalid start Time." });
     }
 
     // Calculate end
@@ -67,7 +69,7 @@ exports.addReservation = async (req, res) => {
 
     if (conflict) {
       return res.status(400).json({
-        message: "This time is already booked.",
+        message: "This time is already Booked.",
       });
     }
 
@@ -79,7 +81,7 @@ exports.addReservation = async (req, res) => {
 
     const timeSlotString = `${startHour}:${startMin}-${endHour}:${endMin}`;
     // PRICE SYSTEM
-    const price = getBasePrice(duration) + getTerrainExtra(terrain) * duration;
+    const price = getBasePrice(duration) + getTerrainExtra(terrain);
 
     // Create reservation
     const reservation = new Reservation({
@@ -135,6 +137,7 @@ exports.getAvailableSlots = async (req, res) => {
       "19:00",
       "20:00",
       "21:00",
+      "22:00",
     ];
 
     const reservations = await Reservation.find({ date, terrain });
