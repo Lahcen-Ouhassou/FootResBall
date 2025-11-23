@@ -118,16 +118,15 @@ export default function ReservationForm({ refresh, editId, onDone }) {
   };
   const today = new Date().toISOString().split("T")[0];
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex flex-col items-center justify-start bg-gray-100 p-4 sm:p-6 md:p-10">
       {/* العنوان فوق الفورم */}
-      <h2 className=" absolute top-23 left-70 text-xl font-bold mb-4 ml-1">
+      <h2 className="text-xl font-bold mb-4">
         {editId ? "Edit Reservation" : "Add Reservation"}
       </h2>
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-4 rounded shadow max-w-md w-full
-             ml-1 -translate-y-25"
+        className="bg-white p-4 rounded shadow w-full max-w-md"
       >
         {error && <div className="text-red-500 mb-2">{error}</div>}
         {success && <div className="text-green-600 mb-2">{success}</div>}
@@ -137,7 +136,7 @@ export default function ReservationForm({ refresh, editId, onDone }) {
           value={form.customerName}
           onChange={handleChange}
           placeholder="Customer Name"
-          className="w-full p-2 mb-2 border rounded"
+          className="w-full p-2 mb-2 border "
         />
 
         <input
@@ -145,7 +144,7 @@ export default function ReservationForm({ refresh, editId, onDone }) {
           value={form.phoneNumber}
           onChange={handleChange}
           placeholder="Phone Number"
-          className="w-full p-2 mb-2 border rounded"
+          className="w-full p-2 mb-2 border "
         />
 
         <input
@@ -153,14 +152,14 @@ export default function ReservationForm({ refresh, editId, onDone }) {
           value={form.idCard}
           onChange={handleChange}
           placeholder="ID Card"
-          className="w-full p-2 mb-2 border rounded"
+          className="w-full p-2 mb-2 border "
         />
 
         <select
           name="terrain"
           value={form.terrain}
           onChange={handleChange}
-          className="w-full p-2 mb-2 border rounded"
+          className="w-full p-2 mb-2 border "
         >
           <option value="A">Terrain A</option>
           <option value="B">Terrain B</option>
@@ -173,14 +172,14 @@ export default function ReservationForm({ refresh, editId, onDone }) {
           min={today}
           value={form.date}
           onChange={handleChange}
-          className="w-full p-2 mb-2 border rounded"
+          className="w-full p-2 mb-2 border "
         />
 
         <select
           name="duration"
           value={form.duration}
           onChange={handleChange}
-          className="w-full p-2 mb-2 border rounded"
+          className="w-full p-2 mb-2 border "
         >
           <option value={1}>1 hour</option>
           <option value={2}>2 hours</option>
@@ -194,7 +193,7 @@ export default function ReservationForm({ refresh, editId, onDone }) {
             name="timeSlotStart"
             value={form.timeSlotStart}
             onChange={handleChange}
-            className="w-full p-2 mb-2 border rounded"
+            className="w-full p-2 mb-2 border "
           >
             <option value="">Select time</option>
             {slots.map((s) => (
