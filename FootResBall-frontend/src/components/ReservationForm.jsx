@@ -116,109 +116,113 @@ export default function ReservationForm({ refresh, editId, onDone }) {
       setError(err.response?.data?.message || err.message || "Error");
     }
   };
-
+  const today = new Date().toISOString().split("T")[0];
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white p-4 rounded shadow max-w-md"
-    >
-      <h3 className="font-bold mb-2">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
+      {/* العنوان فوق الفورم */}
+      <h2 className=" absolute top-23 left-70 text-xl font-bold mb-4 ml-1">
         {editId ? "Edit Reservation" : "Add Reservation"}
-      </h3>
+      </h2>
 
-      {error && <div className="text-red-500 mb-2">{error}</div>}
-      {success && <div className="text-green-600 mb-2">{success}</div>}
-
-      <input
-        name="customerName"
-        value={form.customerName}
-        onChange={handleChange}
-        placeholder="Customer Name"
-        className="w-full p-2 mb-2 border rounded"
-      />
-
-      <input
-        name="phoneNumber"
-        value={form.phoneNumber}
-        onChange={handleChange}
-        placeholder="Phone Number"
-        className="w-full p-2 mb-2 border rounded"
-      />
-
-      <input
-        name="idCard"
-        value={form.idCard}
-        onChange={handleChange}
-        placeholder="ID Card"
-        className="w-full p-2 mb-2 border rounded"
-      />
-
-      <select
-        name="terrain"
-        value={form.terrain}
-        onChange={handleChange}
-        className="w-full p-2 mb-2 border rounded"
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-4 rounded shadow max-w-md w-full
+             ml-1 -translate-y-25"
       >
-        <option value="A">Terrain A</option>
-        <option value="B">Terrain B</option>
-        <option value="C">Terrain C</option>
-      </select>
+        {error && <div className="text-red-500 mb-2">{error}</div>}
+        {success && <div className="text-green-600 mb-2">{success}</div>}
 
-      <input
-        type="date"
-        name="date"
-        value={form.date}
-        onChange={handleChange}
-        className="w-full p-2 mb-2 border rounded"
-      />
+        <input
+          name="customerName"
+          value={form.customerName}
+          onChange={handleChange}
+          placeholder="Customer Name"
+          className="w-full p-2 mb-2 border rounded"
+        />
 
-      <select
-        name="duration"
-        value={form.duration}
-        onChange={handleChange}
-        className="w-full p-2 mb-2 border rounded"
-      >
-        <option value={1}>1 hour</option>
-        <option value={2}>2 hours</option>
-      </select>
+        <input
+          name="phoneNumber"
+          value={form.phoneNumber}
+          onChange={handleChange}
+          placeholder="Phone Number"
+          className="w-full p-2 mb-2 border rounded"
+        />
 
-      <label className="block mb-2">Select time</label>
+        <input
+          name="idCard"
+          value={form.idCard}
+          onChange={handleChange}
+          placeholder="ID Card"
+          className="w-full p-2 mb-2 border rounded"
+        />
 
-      {loadingSlots ? (
-        <div>Loading slots...</div>
-      ) : (
         <select
-          name="timeSlotStart"
-          value={form.timeSlotStart}
+          name="terrain"
+          value={form.terrain}
           onChange={handleChange}
           className="w-full p-2 mb-2 border rounded"
         >
-          <option value="">Select time</option>
-          {slots.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
+          <option value="A">Terrain A</option>
+          <option value="B">Terrain B</option>
+          <option value="C">Terrain C</option>
         </select>
-      )}
 
-      <label className="flex items-center mb-3">
         <input
-          type="checkbox"
-          name="paid"
-          checked={form.paid}
+          type="date"
+          name="date"
+          min={today}
+          value={form.date}
           onChange={handleChange}
-          className="mr-2"
+          className="w-full p-2 mb-2 border rounded"
         />
-        Paid
-      </label>
 
-      <button
-        type="submit"
-        className="bg-green-600 text-white px-4 py-2 rounded"
-      >
-        {editId ? "Update" : "Add Reservation"}
-      </button>
-    </form>
+        <select
+          name="duration"
+          value={form.duration}
+          onChange={handleChange}
+          className="w-full p-2 mb-2 border rounded"
+        >
+          <option value={1}>1 hour</option>
+          <option value={2}>2 hours</option>
+        </select>
+
+        <label className="block mb-2">Select time</label>
+        {loadingSlots ? (
+          <div>Loading slots...</div>
+        ) : (
+          <select
+            name="timeSlotStart"
+            value={form.timeSlotStart}
+            onChange={handleChange}
+            className="w-full p-2 mb-2 border rounded"
+          >
+            <option value="">Select time</option>
+            {slots.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        )}
+
+        <label className="flex items-center mb-3">
+          <input
+            type="checkbox"
+            name="paid"
+            checked={form.paid}
+            onChange={handleChange}
+            className="mr-2"
+          />
+          Paid
+        </label>
+
+        <button
+          type="submit"
+          className="text-white px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 cursor-pointer"
+        >
+          {editId ? "Update" : "Add Reservation"}
+        </button>
+      </form>
+    </div>
   );
 }
