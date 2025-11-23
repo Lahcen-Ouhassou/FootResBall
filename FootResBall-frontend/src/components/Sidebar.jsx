@@ -7,7 +7,7 @@ export default function Sidebar() {
     (isActive ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-100");
 
   return (
-    <aside className="w-64 bg-gray-50 border-r min-h-screen p-4">
+    <aside className="w-64 bg-white  min-h-screen p-4">
       <nav className="flex flex-col gap-2">
         <NavLink to="/" className={linkClass} end>
           Dashboard
