@@ -5,6 +5,8 @@ It provides a secure admin dashboard to create, manage, filter, and organize res
 
 This system is designed with automation, security, and performance in mind.
 
+---
+
 ✨ Features
 🖥️ Admin Dashboard
 
@@ -15,6 +17,8 @@ View today's reservations
 Paid & unpaid counters
 
 Upcoming reservations overview
+
+---
 
 📅 Reservation Management
 
@@ -30,6 +34,8 @@ Delete reservations
 
 Automatic deletion of old reservations after 3 days
 
+---
+
 🔎 Filtering & Organization
 
 Filter by date
@@ -42,6 +48,8 @@ Pricing management per terrain
 
 Duration-based calculations
 
+---
+
 🔐 Security
 
 Admin login protected with JWT authentication
@@ -52,6 +60,8 @@ Password hashing with BcryptJS
 
 Token protection refreshed daily
 
+---
+
 ⚙️ Automation
 
 Node-Cron auto-task runs daily
@@ -59,6 +69,8 @@ Node-Cron auto-task runs daily
 Removes reservations older than 3 days
 
 Keeps system clean and lightweight automatically
+
+---
 
 🛠️ Technologies Used
 Backend (Node.js)
