@@ -126,7 +126,7 @@ export default function ReservationForm({ refresh, editId, onDone }) {
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-4 rounded shadow w-full max-w-md"
+        className="bg-white p-4 shadow w-full max-w-md"
       >
         {error && <div className="text-red-500 mb-2">{error}</div>}
         {success && <div className="text-green-600 mb-2">{success}</div>}
@@ -185,7 +185,6 @@ export default function ReservationForm({ refresh, editId, onDone }) {
           <option value={2}>2 hours</option>
         </select>
 
-        <label className="block mb-2">Select time</label>
         {loadingSlots ? (
           <div>Loading slots...</div>
         ) : (
@@ -217,7 +216,7 @@ export default function ReservationForm({ refresh, editId, onDone }) {
 
         <button
           type="submit"
-          className="text-white px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 cursor-pointer"
+          className="text-white px-4 py-2  bg-blue-600 hover:bg-blue-700 cursor-pointer"
         >
           {editId ? "Update" : "Add Reservation"}
         </button>
