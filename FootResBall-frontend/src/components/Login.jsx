@@ -38,7 +38,7 @@ export default function Login() {
           name="email"
           value={form.email}
           onChange={handleChange}
-          className="w-full p-2 mb-3 rounded bg-gray-700 text-white"
+          className="w-full p-2 mb-3  bg-gray-700 text-white"
           placeholder="Email"
         />
 
@@ -47,7 +47,7 @@ export default function Login() {
           type="password"
           value={form.password}
           onChange={handleChange}
-          className="w-full p-2 mb-3 rounded bg-gray-700 text-white"
+          className="w-full p-2 mb-3  bg-gray-700 text-white"
           placeholder="Password"
         />
         <p className="text-white text-sm mb-4">
@@ -61,7 +61,7 @@ export default function Login() {
         </p>
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 cursor-pointer "
         >
           Login
         </button>
