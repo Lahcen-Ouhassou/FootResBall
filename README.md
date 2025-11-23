@@ -73,38 +73,26 @@ Keeps system clean and lightweight automatically
 ---
 
 🛠️ Technologies Used
-Backend (Node.js)
+
+Backend :
 
 Node.js
-
 Express.js
-
 MongoDB + Mongoose
-
 JWT Authentication
-
 BcryptJS
-
 Node-Cron (auto delete reservations)
-
 PDFKit (generate PDF reservation file)
-
 dotenv
-
 CORS
-
 date-fns
 
-Frontend (React)
+Frontend :
 
 React + Vite
-
 Axios
-
 React Router DOM
-
 TailwindCSS
-
 LocalStorage Authentication
 
 ---
