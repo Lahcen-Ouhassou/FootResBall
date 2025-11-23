@@ -110,26 +110,35 @@ LocalStorage Authentication
 ---
 
 📦 Installation & Setup
-1️⃣ Clone the Repository
-git clone https://github.com/Lahcen-Ouhassou/FootResBall.git
 
+Clone the Repository
+
+git clone https://github.com/Lahcen-Ouhassou/FootResBall.git
+--
 🚀 Backend Setup
+
 cd FootResBall-backend
 npm install
-
+--
 Create a .env file:
+
 PORT=5000
+
 MONGO_URI=your_mongodb_connection
+
 JWT_SECRET=your_jwt_secret_key
 
 Start Backend
-npm start
 
+npm start
+--
 💻 Frontend Setup
 cd FootResBall-frontend
-npm install
-npm run dev
 
+npm install
+
+npm run dev
+--
 🔐 Admin Login
 
 The system uses JWT authentication:
@@ -141,7 +150,7 @@ Token stored in LocalStorage
 Each protected route checks token
 
 Token refresh protection daily
-
+--
 ⚡ Auto Delete System (Node-Cron)
 
 Every night, a cron job:
@@ -153,7 +162,7 @@ Deletes ones older than 3 days
 Keeps database clean
 
 100% automatic, no admin action needed
-
+--
 📄 PDF Generator
 
 Each reservation can generate a PDF with:
@@ -172,8 +181,7 @@ Payment status
 
 Unique reservation ID
 
-👨‍💻 Developer
-
+---
 
 Developed by **[Lahcen Ouhassou](https://github.com/Lahcen-Ouhassou)**  
 
