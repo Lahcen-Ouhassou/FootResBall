@@ -37,22 +37,35 @@ export default function Dashboard() {
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">Dashboard</h2>
-      <div className="grid grid-cols-4 gap-4">
+
+      <div
+        className="
+      grid 
+      grid-cols-1       /* mobile */
+      sm:grid-cols-2    /* ecran sghira */
+      md:grid-cols-3    /*tablet  */
+      lg:grid-cols-4    /* PC */
+      gap-4
+    "
+      >
         <div className="p-4 bg-white rounded shadow">
           Total Reservations
           <br />
           <strong>{counts.total}</strong>
         </div>
+
         <div className="p-4 bg-white rounded shadow">
           Today
           <br />
           <strong>{counts.today}</strong>
         </div>
+
         <div className="p-4 bg-white rounded shadow">
           Paid
           <br />
           <strong>{counts.paid}</strong>
         </div>
+
         <div className="p-4 bg-white rounded shadow">
           Unpaid
           <br />
