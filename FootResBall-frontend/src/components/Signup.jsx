@@ -34,14 +34,14 @@ export default function Signup() {
           name="name"
           value={form.name}
           onChange={handleChange}
-          className="w-full p-2 mb-3 rounded bg-gray-700 text-white"
+          className="w-full p-2 mb-3 bg-gray-700 text-white"
           placeholder="Name"
         />
         <input
           name="email"
           value={form.email}
           onChange={handleChange}
-          className="w-full p-2 mb-3 bg-gray-700 text-white rounded"
+          className="w-full p-2 mb-3 bg-gray-700 text-white "
           placeholder="Email"
         />
 
@@ -50,7 +50,7 @@ export default function Signup() {
           type="password"
           value={form.password}
           onChange={handleChange}
-          className="w-full p-2 mb-3 bg-gray-700 text-white rounded"
+          className="w-full p-2 mb-3 bg-gray-700 text-white "
           placeholder="Password"
         />
         <p className="text-white text-sm mb-4">
@@ -62,7 +62,7 @@ export default function Signup() {
             Login
           </span>
         </p>
-        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">
+        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 cursor-pointer">
           Create Admin
         </button>
       </form>
