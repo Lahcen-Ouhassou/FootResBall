@@ -60,8 +60,23 @@ export default function ReservationsPage() {
             <div key={r._id} className="border p-3 mb-3 rounded bg-white">
               <div className="flex justify-between">
                 <div>
-                  <strong>{r.customerName}</strong> — Terrain {r.terrain}
+                  <div className="flex items-center gap-2">
+                    <strong>{r.customerName}</strong>
+
+                    {/* IF paid → show green Paid */}
+                    {r.paid ? (
+                      <span className="px-2 py-1 bg-green-500 text-white text-xs rounded">
+                        Paid
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 bg-red-500 text-white text-xs rounded">
+                        UnPaid
+                      </span>
+                    )}
+                  </div>
+                  Terrain {r.terrain}
                   <div>{new Date(r.timeSlotStart).toLocaleString()}</div>
+                  <div>{new Date(r.timeSlotEnd).toLocaleString()}</div>
                   <div>
                     Duration: {r.duration}h | Price: {r.price} DH
                   </div>
@@ -70,20 +85,23 @@ export default function ReservationsPage() {
                 <div className="flex gap-2 items-start">
                   <button
                     onClick={() => navigate(`/reserve-edit/${r._id}`)}
-                    className="bg-yellow-500 px-3 py-1 text-white rounded"
+                    className=" bg-blue-600   hover:bg-blue-700
+ px-3 py-1 text-white rounded  cursor-pointer"
                   >
                     Edit
                   </button>
 
                   <button
                     onClick={() => handleDelete(r._id)}
-                    className="px-2 py-1 bg-red-500 text-white rounded"
+                    className="px-2 py-1 bg-blue-600   hover:bg-blue-700
+ text-white rounded  cursor-pointer"
                   >
                     Delete
                   </button>
 
                   <button
-                    className="px-2 py-1 bg-blue-500 text-white rounded"
+                    className="px-2 py-1  bg-blue-600   hover:bg-blue-700
+ p-4 text-white rounded  cursor-pointer"
                     onClick={() => handleDownload(r._id)}
                   >
                     PDF
