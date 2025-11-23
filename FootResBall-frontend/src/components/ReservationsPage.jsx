@@ -60,7 +60,7 @@ export default function ReservationsPage() {
             <div
               key={r._id}
               className="p-3 mb-1 border bg-white hover:bg-gray-100 
-                 w-full max-w-xl mx-auto rounded"
+                 w-full max-w-xl mx-auto "
             >
               <div className="flex flex-col sm:flex-row justify-between gap-3">
                 <div>
