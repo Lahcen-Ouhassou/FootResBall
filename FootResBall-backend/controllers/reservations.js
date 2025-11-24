@@ -73,8 +73,8 @@ exports.addReservation = async (req, res) => {
       });
     }
 
-    const startHour = String(start.getHours()).padStart(2, "0");
-    const startMin = String(start.getMinutes()).padStart(2, "0");
+    const startHour = String(start.getHours()).padStart(2, "0"); //0 → "00" , 14 → "14"
+    const startMin = String(start.getMinutes()).padStart(2, "0"); //0 → "00" , 30 → "30"
 
     const endHour = String(end.getHours()).padStart(2, "0");
     const endMin = String(end.getMinutes()).padStart(2, "0");
