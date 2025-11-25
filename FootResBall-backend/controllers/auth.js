@@ -2,7 +2,7 @@ const Admin = require("../models/Admin");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-// Signup (بدون Token)
+// Signup
 exports.signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
