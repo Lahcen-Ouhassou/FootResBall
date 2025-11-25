@@ -31,7 +31,7 @@ exports.signup = async (req, res) => {
   }
 };
 
-// Login = يعطي Token
+// Login = Token
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
