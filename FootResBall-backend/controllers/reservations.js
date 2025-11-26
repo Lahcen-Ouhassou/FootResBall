@@ -191,7 +191,7 @@ exports.getReservations = async (req, res) => {
 };
 
 // =======================
-// GET ONE BY ID
+// GET RESERVATION BY ID
 // =======================
 exports.getReservationById = async (req, res) => {
   try {
