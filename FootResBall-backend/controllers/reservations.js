@@ -3,7 +3,7 @@ const { v4: uuidv4 } = require("uuid");
 const generateReservationPDF = require("../utils/pdfGenerator");
 
 // =======================
-// SETTINGS
+// SETTINGS All
 // =======================
 
 const MIN_TIME = "08:00";
