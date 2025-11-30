@@ -7,7 +7,7 @@ export default function Navbar({ onLogout }) {
       <div className="flex items-center gap-4">
         <button
           onClick={onLogout}
-          className="bg-red-800 text-white px-3 py-1 rounded hover:bg-red-600 cursor-pointer"
+          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 cursor-pointer"
         >
           Logout
         </button>
