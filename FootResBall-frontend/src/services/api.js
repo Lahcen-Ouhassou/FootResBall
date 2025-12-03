@@ -16,7 +16,7 @@ export default API;
 export const signup = (data) => API.post("/auth/signup", data);
 export const login = (data) => API.post("/auth/login", data);
 
-// Reservations
+// All Reservations
 export const getReservations = (params = {}) =>
   API.get("/reservations", { params });
 export const addReservation = (data) => API.post("/reservations", data);
