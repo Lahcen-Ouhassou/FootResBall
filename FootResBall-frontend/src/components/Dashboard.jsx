@@ -32,7 +32,7 @@ export default function Dashboard() {
     load();
   }, []);
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading) return <div className="p-5">Loading...</div>;
 
   return (
     <div className="p-6">
