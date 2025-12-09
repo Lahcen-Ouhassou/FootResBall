@@ -93,8 +93,8 @@ export default function ReservationForm({ refresh, editId, onDone }) {
         await updateReservation(editId, form);
         setSuccess("Reservation updated successfully!");
         setTimeout(() => {
-          navigate("/reservations"); // ⬅️ يرجع لصفحة All Reservations
-        }, 1100);
+          navigate("/reservations"); // ⬅️ يرجع Reservations Page
+        }, 1200);
       } else {
         await addReservation(form);
         setSuccess("Reservation added successfully!");
