@@ -87,7 +87,7 @@ export default function ReservationForm({ refresh, editId, onDone }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (!form.timeSlotStart) throw new Error("Please select a time slot");
+      if (!form.timeSlotStart) throw new Error("Please Select a Time Slot");
 
       if (editId) {
         await updateReservation(editId, form);
@@ -97,7 +97,7 @@ export default function ReservationForm({ refresh, editId, onDone }) {
         }, 1200);
       } else {
         await addReservation(form);
-        setSuccess("Reservation added successfully!");
+        setSuccess("Reservation added Successfully!");
         setForm({
           customerName: "",
           phoneNumber: "",
