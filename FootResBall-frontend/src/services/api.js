@@ -18,7 +18,7 @@ export const login = (data) => API.post("/auth/login", data);
 
 // All Reservations
 export const getReservations = (params = {}) =>
-  API.get("/reservations", { params });
+  API.get("/reservations", { params }); 
 export const addReservation = (data) => API.post("/reservations", data);
 export const deleteReservation = (id) => API.delete(`/reservations/${id}`);
 export const updateReservation = (id, data) =>
