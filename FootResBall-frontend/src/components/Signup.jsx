@@ -61,7 +61,7 @@ export default function Signup() {
           <span
             className="text-blue-400 cursor-pointer"
             onClick={() => navigate("/login")}
-          >
+          >   
             Login
           </span>
         </p>
