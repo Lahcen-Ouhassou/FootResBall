@@ -30,6 +30,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* LOGIN SIGNUP */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
