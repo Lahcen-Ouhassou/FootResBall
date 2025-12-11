@@ -53,7 +53,7 @@ export default function App() {
           }
         />
 
-        {/* ADD NEW */}
+        {/* ADD NEW RESERVATION */}
         <Route
           path="/reserve"
           element={
@@ -65,7 +65,7 @@ export default function App() {
           }
         />
 
-        {/* EDIT */}
+        {/* EDIT RESERVATION */}
         <Route
           path="/reserve-edit/:id"
           element={
